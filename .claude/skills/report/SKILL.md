@@ -10,9 +10,13 @@ that's the language of submission.
 
 ## File layout
 
-The report-and-code file (the part that gets submitted) holds the header
-plus the solution plus the computation protocol, all in one file. See
-CLAUDE.md for where that file and its tests live in this repo.
+The report is `report.typ`, scaffolded from `templates/report_template.typ`
+(`just new taskN topic`). It holds the header, the solution (embedding the
+task's `.pl` file via `#raw(read(...))`), a screenshot placeholder, and the
+computation protocol — this is what gets submitted (compiled to PDF with
+`just report taskN`). The `.pl` file itself is just code, no report content
+or comments duplicating the protocol. See CLAUDE.md for where these files
+and `tests.pl` live in this repo.
 
 ## Report header
 
@@ -27,22 +31,31 @@ Must always contain, in Russian:
 
 ## Computation protocol
 
-For every step, state (Russian terms to reuse verbatim are given in
-parentheses):
+The protocol is a table, one row per resolution step, built with the
+`proto-table` helper from `templates/protocol.typ` (imported as
+`#import "/templates/protocol.typ": proto-table`, compiled with
+`typst compile --root .` so the root-absolute import resolves — see
+the `report` just recipe). Columns, in order:
 
-- a content comment (содержательный комментарий): what's happening and why,
-  in terms of the task, not just the mechanics;
-- the chosen subgoal (выбор подцели): which part of the current state is
-  handled;
-- the chosen rule (выбор правила): which fact/rule/production/axiom
-  applies;
-- the chosen substitution (выбор подстановки): unifier/variable binding,
-  concretely.
+1. `Шаг и выбранная подцель g_i` — step number and the subgoal handled
+   this step;
+2. `Выбранное правило` — which fact/rule/production/axiom applies;
+3. `Выбранная подстановка σ_i` — the unifier/variable binding,
+   concretely;
+4. `Резольвента R_i (через N_i) и комментарий` — the new subgoals
+   `N_i` that replace `g_i` this step (not the whole resolvent spelled
+   out again), plus a short content comment on what's happening and
+   why, in terms of the task, not just the mechanics.
 
-Write out the current computation state explicitly at every step, using the
-correct notation for the model, e.g. for Prolog that's the resolvent
-(резольвента) — the current list of remaining subgoals, `R_i = { ... }`,
-produced by SLD-resolution.
+Define the notation once near the top of the protocol section, reusing
+exactly this relation (it's task content, not a restated instruction):
+`R_i = (R_{i-1} \ {g_i}) ∪ σ_i(N_i)`. State `R_0` (the initial query)
+before the table.
+
+If a step tries several rules before one fits, or fails outright (no
+rule unifies), that doesn't fit one table row — keep it as prose
+directly below the table, same style as a failure step would otherwise
+read, with Подцель/Правило/Подстановка lines.
 
 If the predicate/task can both succeed and fail, show the protocol for both
 outcomes, not just the happy path.
